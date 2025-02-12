@@ -1,0 +1,18 @@
+export interface Member {
+  id: number;
+  name: string;
+  isHOD: boolean;
+  hasChildren: boolean;
+  preferFirstService: boolean;
+  lastServiceDate: Date | null;
+  serviceCount: number;
+  unavailableDates: Date[];
+  color: string;
+}
+
+export interface ServiceSchedule {
+  date: Date;
+  firstService: Member[];
+  secondService: Member[];
+  thirdService: Member[];
+}

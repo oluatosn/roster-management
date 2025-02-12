@@ -1,0 +1,98 @@
+import { Member, ServiceSchedule } from './types';
+
+export function generateSundays(year: number): Date[] {
+  const sundays: Date[] = [];
+  const date = new Date(year, 0, 1);
+  while (date.getFullYear() === year) {
+    if (date.getDay() === 0) {
+      sundays.push(new Date(date));
+    }
+    date.setDate(date.getDate() + 1);
+  }
+  return sundays;
+}
+
+export function generateSchedule(
+  members: Member[],
+  year: number = 2025,
+  membersPerService: number = 10
+): ServiceSchedule[] {
+  const sundays = generateSundays(year);
+  const schedule: ServiceSchedule[] = [];
+  let lastServiceAssignments = new Map<number, string>();
+
+  for (const sunday of sundays) {
+    const availableMembers = members.filter(
+      (m) => !m.unavailableDates.some((d) => d.toDateString() === sunday.toDateString())
+    );
+
+    const daySchedule: ServiceSchedule = {
+      date: sunday,
+      firstService: [],
+      secondService: [],
+      thirdService: [],
+    };
+
+    // First Service - prioritize HOD and members who prefer first service
+    const hodMember = availableMembers.find(
+      (m) => m.isHOD && lastServiceAssignments.get(m.id) !== 'first'
+    );
+    if (hodMember) {
+      daySchedule.firstService.push(hodMember);
+    }
+
+    const firstServiceCandidates = availableMembers.filter(
+      (m) =>
+        !m.hasChildren &&
+        !daySchedule.firstService.includes(m) &&
+        lastServiceAssignments.get(m.id) !== 'first'
+    );
+
+    while (
+      daySchedule.firstService.length < membersPerService &&
+      firstServiceCandidates.length > 0
+    ) {
+      const randomIndex = Math.floor(Math.random() * firstServiceCandidates.length);
+      const member = firstServiceCandidates[randomIndex];
+      daySchedule.firstService.push(member);
+      firstServiceCandidates.splice(randomIndex, 1);
+    }
+
+    // Second and Third Services - prioritize members with children
+    const remainingMembers = availableMembers.filter(
+      (m) => !daySchedule.firstService.includes(m)
+    );
+
+    const withChildren = remainingMembers.filter((m) => m.hasChildren);
+    const withoutChildren = remainingMembers.filter((m) => !m.hasChildren);
+
+    // Distribute members with children between second and third services
+    withChildren.forEach((member, index) => {
+      const lastService = lastServiceAssignments.get(member.id);
+      if (index % 2 === 0 && lastService !== 'second' && daySchedule.secondService.length < membersPerService) {
+        daySchedule.secondService.push(member);
+      } else if (lastService !== 'third' && daySchedule.thirdService.length < membersPerService) {
+        daySchedule.thirdService.push(member);
+      }
+    });
+
+    // Fill remaining slots
+    withoutChildren.forEach((member) => {
+      const lastService = lastServiceAssignments.get(member.id);
+      if (daySchedule.secondService.length < membersPerService && lastService !== 'second') {
+        daySchedule.secondService.push(member);
+      } else if (daySchedule.thirdService.length < membersPerService && lastService !== 'third') {
+        daySchedule.thirdService.push(member);
+      }
+    });
+
+    // Update last service assignments
+    daySchedule.firstService.forEach((m) => lastServiceAssignments.set(m.id, 'first'));
+    daySchedule.secondService.forEach((m) => lastServiceAssignments.set(m.id, 'second'));
+    daySchedule.thirdService.forEach((m) => lastServiceAssignments.set(m.id, 'third'));
+
+    schedule.push(daySchedule);
+  }
+
+  return schedule;
+}

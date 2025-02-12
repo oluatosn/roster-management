@@ -1,0 +1,228 @@
+"use client";
+
+import React, { useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useStore } from '@/lib/store';
+import type { Member } from '@/lib/types';
+// Import for testing - can be commented out in production
+import { sampleMembers } from '@/lib/sampleData';
+
+export function MemberManagement() {
+  const { members, addMember, updateMember, removeMember, resetStore } = useStore();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newMember, setNewMember] = useState({
+    name: '',
+    isHOD: false,
+    hasChildren: false,
+    preferFirstService: false,
+    serviceCount: 0,
+    unavailableDates: [],
+    color: '#' + Math.floor(Math.random()*16777215).toString(16)
+  });
+
+  // Check if there's already an HOD
+  const existingHOD = members.some(member => member.isHOD);
+
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    addMember({
+      ...newMember,
+      lastServiceDate: null,
+    });
+    setNewMember({
+      name: '',
+      isHOD: false,
+      hasChildren: false,
+      preferFirstService: false,
+      serviceCount: 0,
+      unavailableDates: [],
+      color: '#' + Math.floor(Math.random()*16777215).toString(16)
+    });
+    setShowAddDialog(false);
+  };
+
+  const toggleMemberAttribute = (memberId: number, attribute: keyof Member) => {
+    const member = members.find(m => m.id === memberId);
+    if (member) {
+      // If trying to enable HOD and there's already an HOD (that's not this member), prevent it
+      if (attribute === 'isHOD' && !member.isHOD && existingHOD) {
+        return;
+      }
+      // If disabling HOD for the current HOD, allow it
+      updateMember(memberId, {
+        [attribute]: !member[attribute]
+      });
+    }
+  };
+
+  return (
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Church Members</CardTitle>
+          {/* Admin Controls - Can be removed in production */}
+          <div className="flex gap-2 mt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (window.confirm('This will clear all members and schedules. Are you sure?')) {
+                  resetStore();
+                }
+              }}
+            >
+              Reset All Data
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                if (window.confirm('Load sample member data?')) {
+                  sampleMembers.forEach(member => addMember(member));
+                }
+              }}
+            >
+              Load Sample Data
+            </Button>
+          </div>
+        </div>
+        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Member
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Member</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleAddMember} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  type="text"
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={newMember.isHOD}
+                    onChange={(e) => {
+                      // Only allow checking if there's no existing HOD
+                      if (!existingHOD || !e.target.checked) {
+                        setNewMember({ ...newMember, isHOD: e.target.checked });
+                      }
+                    }}
+                    disabled={existingHOD && !newMember.isHOD}
+                    className="rounded"
+                  />
+                  <span className={existingHOD && !newMember.isHOD ? "text-gray-400" : ""}>
+                    Head of Department
+                    {existingHOD && !newMember.isHOD && " (Already assigned)"}
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={newMember.hasChildren}
+                    onChange={(e) => setNewMember({ ...newMember, hasChildren: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Has Children</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={newMember.preferFirstService}
+                    onChange={(e) => setNewMember({ ...newMember, preferFirstService: e.target.checked })}
+                    className="rounded"
+                  />
+                  <span>Prefers First Service</span>
+                </label>
+              </div>
+              <Button type="submit">Add Member</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {members.map((member) => (
+            <div
+              key={member.id}
+              className="p-4 rounded-lg border"
+              style={{ borderColor: member.color }}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold">{member.name}</h3>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Are you sure you want to remove ${member.name}?`)) {
+                        removeMember(member.id);
+                      }
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <span
+                    className="w-4 h-4 rounded-full"
+                    style={{ backgroundColor: member.color }}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1 text-sm">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={member.isHOD}
+                    onChange={() => toggleMemberAttribute(member.id, 'isHOD')}
+                    disabled={existingHOD && !member.isHOD}
+                    className="rounded"
+                  />
+                  <span className={existingHOD && !member.isHOD ? "text-gray-400" : ""}>
+                    Head of Department
+                    {existingHOD && !member.isHOD && " (Already assigned)"}
+                  </span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={member.hasChildren}
+                    onChange={() => toggleMemberAttribute(member.id, 'hasChildren')}
+                    className="rounded"
+                  />
+                  <span>Has Children</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={member.preferFirstService}
+                    onChange={() => toggleMemberAttribute(member.id, 'preferFirstService')}
+                    className="rounded"
+                  />
+                  <span>Prefers First Service</span>
+                </label>
+              </div>
+              {member.unavailableDates.length > 0 && (
+                <div className="mt-2 text-sm text-gray-500">
+                  <p>Unavailable dates: {member.unavailableDates.length}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

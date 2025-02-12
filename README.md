@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Church Service Roster Manager
+
+A modern, React-based web application for managing church service rosters and scheduling. This application helps churches efficiently manage their service schedules, member assignments, and special events while respecting various scheduling rules and member preferences.
+
+## Features
+
+### Member Management
+- Add and manage church members
+- Track member preferences and availability
+- Assign roles (Head of Department)
+- Mark members with special considerations (has children, service time preferences)
+- Track service history and participation
+
+### Service Scheduling
+- Automated schedule generation for multiple services
+- Support for up to three services per Sunday
+- Fair distribution of assignments
+- Respect member preferences and constraints
+- Maintain consistent service times for members
+- Ensure minimum and maximum member requirements per service
+
+### Special Events
+- Create and manage special events that affect regular scheduling
+- Support for various recurrence patterns:
+  - Monthly events
+  - Bimonthly events
+  - Quarterly events
+  - Yearly events
+  - Custom intervals
+- Flexible event configuration (number of services, date ranges)
+- Active/inactive event toggling
+
+### Scheduling Rules
+- Configurable minimum/maximum members per service
+- Customizable minimum days between member assignments
+- Optional preference settings:
+  - Respect member service time preferences
+  - Prioritize members with children for later services
+  - Maintain consistent service times
+
+### Data Management
+- Import/export functionality for roster data
+- Persistent storage using localStorage
+- Sample data loading for testing
+- Backup and restore capabilities
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js (v16 or later)
+- npm or yarn package manager
 
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/church-roster-manager.git
+```
+
+2. Navigate to the project directory:
+```bash
+cd church-roster-manager
+```
+
+3. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open your browser and navigate to `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Setting Up Members
+1. Navigate to the Members tab
+2. Click "Add Member"
+3. Fill in member details:
+   - Name
+   - Head of Department status
+   - Children status
+   - Service preferences
 
-## Learn More
+### Configuring Scheduling Rules
+1. Go to the Scheduling Rules tab
+2. Set your preferred:
+   - Minimum/maximum members per service
+   - Minimum days between services
+   - Preference settings
 
-To learn more about Next.js, take a look at the following resources:
+### Managing Special Events
+1. Access the Settings tab
+2. Click "Add Event"
+3. Configure event details:
+   - Name
+   - Date range
+   - Number of services
+   - Recurrence pattern (if applicable)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Generating Schedules
+The system automatically generates schedules based on:
+- Current member roster
+- Configured scheduling rules
+- Active special events
+- Member availability and preferences
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technical Details
 
-## Deploy on Vercel
+### Built With
+- React
+- Next.js
+- TypeScript
+- Tailwind CSS
+- Zustand (State Management)
+- shadcn/ui Components
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Project Structure
+- `/components` - React components
+- `/lib` - Utility functions and types
+- `/styles` - CSS and styling files
+- `/public` - Static assets
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+We welcome contributions! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details.
