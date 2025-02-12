@@ -80,6 +80,19 @@ yarn dev
 
 ## Usage
 
+### Quick Start with Sample Data
+The application provides a simple way to test its functionality using sample data:
+
+1. In the Admin Dashboard, click the "Load Sample Data" button in the top right corner
+2. Confirm the prompt to load sample member data
+3. The system will populate with test members and their preferences
+
+To clear the sample data (or any existing data):
+1. Go to the Settings tab
+2. Scroll down to "Data Management"
+3. Click "Clear All Data"
+4. Confirm the prompt to reset all data
+
 ### Setting Up Members
 1. Navigate to the Members tab
 2. Click "Add Member"
